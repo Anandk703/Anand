@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UX Research Quiz</title>
+    <style>
+        :root {
+            --primary: #4a90a4;
+            --secondary: #6ba8bb;
+            --accent: #ff9a76;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --success: #28a745;
+            --danger: #dc3545;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .description {
+            color: #666;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .quiz-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+
+        .question-counter, .score-display {
+            font-weight: bold;
+        }
+
+        .question-container {
+            margin-bottom: 25px;
+        }
+
+        .question-number {
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option {
+            padding: 15px;
+            border: 2px solid #eaeaea;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .option:hover {
+            background-color: #f8f9fa;
+            border-color: var(--secondary);
+        }
+
+        .option.selected {
+            background-color: #e6f2ff;
+            border-color: var(--primary);
+        }
+
+        .option.correct {
+            background-color: #d4edda;
+            border-color: var(--success);
+        }
+
+        .option.incorrect {
+            background-color: #f8d7da;
+            border-color: var(--danger);
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: var(--primary);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        button:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #submit-btn {
+            background-color: var(--accent);
+        }
+
+        #submit-btn:hover {
+            background-color: #ffb396;
+        }
+
+        .results-container {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: conic-gradient(var(--success) 0% 0%, #eaeaea 0% 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+
+        .score-circle::before {
+            content: '';
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background-color: white;
+            border-radius: 50%;
+        }
+
+        .score-value {
+            position: relative;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--dark);
+        }
+
+        .score-text {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .restart-btn {
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background-color: #eaeaea;
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .quiz-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .navigation {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>UX Research Quiz</h1>
+            <p class="description">Test your knowledge of UX research methods, tools, and best practices</p>
+        </header>
+
+        <div class="quiz-info">
+            <div class="question-counter">Question: <span id="current-question">1</span> / <span id="total-questions">40</span></div>
+            <div class="score-display">Score: <span id="current-score">0</span></div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress" id="progress-bar"></div>
+        </div>
+
+        <div id="quiz-container">
+            <div class="question-container">
+                <div class="question-number">Question <span id="q-number">1</span></div>
+                <div class="question-text" id="question-text"></div>
+                <div class="options-container" id="options-container"></div>
+            </div>
+
+            <div class="navigation">
+                <button id="prev-btn" disabled>Previous</button>
+                <button id="next-btn">Next</button>
+                <button id="submit-btn" class="hidden">Submit Quiz</button>
+            </div>
+        </div>
+
+        <div id="results-container" class="results-container hidden">
+            <div class="score-circle">
+                <div class="score-value" id="final-score">0%</div>
+            </div>
+            <h2 class="score-text" id="score-message">Quiz Completed!</h2>
+            <p id="score-details">You scored <span id="correct-answers">0</span> out of <span id="total-questions-result">40</span> questions correctly.</p>
+            <button id="restart-btn" class="restart-btn">Restart Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        // Quiz questions and answers
+        const quizData = [
+            {
+                question: "The primary goal of UX research is to:",
+                options: [
+                    "Optimize server performance",
+                    "Understand users' behaviors, needs, and motivations",
+                    "Improve backend coding efficiency",
+                    "Enhance marketing campaigns"
+                ],
+                correct: 1
+            },
+            {
+                question: "UX research is best described as:",
+                options: [
+                    "A one-time task before design starts",
+                    "An ongoing process integrated throughout UX design",
+                    "A post-launch feedback activity only",
+                    "An optional step in product development"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which of the following is NOT a direct outcome of UX research?",
+                options: [
+                    "Identifying user pain points",
+                    "Understanding target audience",
+                    "Reducing server costs",
+                    "Generating design requirements"
+                ],
+                correct: 2
+            },
+            {
+                question: "UX research mainly bridges the gap between:",
+                options: [
+                    "User needs and system design",
+                    "Business profits and investments",
+                    "Backend coding and databases",
+                    "Sales and advertising"
+                ],
+                correct: 0
+            },
+            {
+                question: "If a design team skips UX research, the most likely risk is:",
+                options: [
+                    "Product over-optimization",
+                    "Misalignment with user needs",
+                    "Faster user adoption",
+                    "Lower software maintenance"
+                ],
+                correct: 1
+            },
+            {
+                question: "In Adobe XD, user testing prototypes primarily helps to:",
+                options: [
+                    "Debug code errors",
+                    "Validate user interactions and flows",
+                    "Improve network speed",
+                    "Increase backend performance"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which Adobe XD feature is most relevant for UX research?",
+                options: [
+                    "Prototype linking and user flow testing",
+                    "JavaScript integration",
+                    "Database connections",
+                    "Cloud server optimization"
+                ],
+                correct: 0
+            },
+            {
+                question: "When using Adobe XD for research, what is the purpose of clickable prototypes?",
+                options: [
+                    "To test backend code",
+                    "To simulate real user interactions before development",
+                    "To measure CPU usage",
+                    "To finalize marketing strategies"
+                ],
+                correct: 1
+            },
+            {
+                question: "Running user tests in Adobe XD allows researchers to:",
+                options: [
+                    "Collect user feedback on design usability",
+                    "Optimize SQL queries",
+                    "Modify server storage capacity",
+                    "Replace market surveys"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which type of UX research is best supported by Adobe XD prototypes?",
+                options: [
+                    "Generative research",
+                    "Evaluative research",
+                    "Ethnographic field study",
+                    "Secondary research"
+                ],
+                correct: 1
+            },
+            {
+                question: "The purpose of competitor UX research is to:",
+                options: [
+                    "Copy competitor design directly",
+                    "Benchmark strengths and weaknesses of rival products",
+                    "Increase server security",
+                    "Avoid user interviews"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which of the following is a key activity in competitor UX research?",
+                options: [
+                    "Reverse engineering backend",
+                    "Heuristic evaluation of rival interfaces",
+                    "Copy-pasting design codes",
+                    "Running SQL queries on competitor servers"
+                ],
+                correct: 1
+            },
+            {
+                question: "A mobile app team analyzes why users prefer a competitor's checkout flow. This is an example of:",
+                options: [
+                    "Market research only",
+                    "Competitor UX benchmarking",
+                    "Database testing",
+                    "A/B testing"
+                ],
+                correct: 1
+            },
+            {
+                question: "Competitor UX research helps teams primarily to:",
+                options: [
+                    "Identify gaps and opportunities in design strategy",
+                    "Predict competitor revenue",
+                    "Replace primary UX research",
+                    "Reduce testing costs completely"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which tool is LEAST useful for competitor UX analysis?",
+                options: [
+                    "Heuristic evaluations",
+                    "User journey mapping of rival products",
+                    "Competitor usability tests",
+                    "Database optimization tools"
+                ],
+                correct: 3
+            },
+            {
+                question: "A user persona in UX is:",
+                options: [
+                    "A fictional character representing a real user segment",
+                    "A real biography of a single user",
+                    "A competitor profile",
+                    "A system architecture diagram"
+                ],
+                correct: 0
+            },
+            {
+                question: "The key difference between a persona and a user profile is:",
+                options: [
+                    "Persona = fictional, User profile = factual data",
+                    "Persona = backend details, User profile = design flow",
+                    "Persona = competitor details, User profile = system logs",
+                    "Persona = business needs, User profile = marketing goals"
+                ],
+                correct: 0
+            },
+            {
+                question: "Personas are built using:",
+                options: [
+                    "Assumptions only",
+                    "Research data like interviews and surveys",
+                    "Database queries",
+                    "Competitor's personal data"
+                ],
+                correct: 1
+            },
+            {
+                question: "A persona with goals, frustrations, and motivations is MOST useful during:",
+                options: [
+                    "Database indexing",
+                    "User-centered design decision-making",
+                    "Network optimization",
+                    "Server load testing"
+                ],
+                correct: 1
+            },
+            {
+                question: "User profiles typically contain:",
+                options: [
+                    "Motivations and fictional goals",
+                    "Demographic and factual user information",
+                    "Backend schema designs",
+                    "Competitor pricing details"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which of the following is NOT a type of UX research?",
+                options: [
+                    "Generative research",
+                    "Evaluative research",
+                    "Summative research",
+                    "Predictive coding research"
+                ],
+                correct: 3
+            },
+            {
+                question: "Generative UX research is conducted primarily to:",
+                options: [
+                    "Measure system performance",
+                    "Explore user needs before design",
+                    "Evaluate finished products",
+                    "Compare competitor pricing"
+                ],
+                correct: 1
+            },
+            {
+                question: "Evaluative UX research mainly focuses on:",
+                options: [
+                    "Testing prototypes and final designs",
+                    "Brainstorming future features only",
+                    "Studying competitors",
+                    "Enhancing server load handling"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which type of UX research involves cultural and contextual study of users?",
+                options: [
+                    "Ethnographic research",
+                    "Predictive research",
+                    "Quantitative analytics",
+                    "Controlled lab testing"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which UX research method relies on statistical data?",
+                options: [
+                    "Quantitative research",
+                    "Qualitative research",
+                    "Heuristic evaluation",
+                    "Storyboarding"
+                ],
+                correct: 0
+            },
+            {
+                question: "Observing how users struggle with a checkout page is an example of:",
+                options: [
+                    "Quantitative research",
+                    "Qualitative research",
+                    "Competitor research",
+                    "Market survey"
+                ],
+                correct: 1
+            },
+            {
+                question: "Collecting heatmap data of clicks on a webpage is:",
+                options: [
+                    "Qualitative research",
+                    "Quantitative research",
+                    "Persona development",
+                    "Competitor analysis"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which is a key advantage of qualitative research?",
+                options: [
+                    "Provides deep insights into user behavior and motivations",
+                    "Produces large numerical datasets",
+                    "Reduces need for interviews",
+                    "Requires no user involvement"
+                ],
+                correct: 0
+            },
+            {
+                question: "A survey with 10,000 responses on app usability issues is:",
+                options: [
+                    "Quantitative research",
+                    "Qualitative research",
+                    "Ethnographic study",
+                    "Generative research"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which is a limitation of quantitative UX research?",
+                options: [
+                    "Cannot measure real behavior",
+                    "Lacks context behind the numbers",
+                    "Is not scalable",
+                    "Ignores demographics"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which method is most suitable for capturing detailed user thoughts in their own words?",
+                options: [
+                    "Survey analytics",
+                    "Structured interviews",
+                    "A/B testing",
+                    "Eye-tracking"
+                ],
+                correct: 1
+            },
+            {
+                question: "In UX interviews, open-ended questions are used to:",
+                options: [
+                    "Collect statistical data",
+                    "Encourage detailed insights from users",
+                    "Avoid user engagement",
+                    "Finalize prototypes"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which is a risk in running user interviews?",
+                options: [
+                    "Response bias from participants",
+                    "Generating too much statistical data",
+                    "Avoiding user interaction",
+                    "Producing server errors"
+                ],
+                correct: 0
+            },
+            {
+                question: "Observing users in their natural environment is called:",
+                options: [
+                    "Field study",
+                    "Laboratory testing",
+                    "Competitor benchmarking",
+                    "A/B testing"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which is a limitation of observational UX research?",
+                options: [
+                    "Provides real behavior insights",
+                    "Consumes more time and resources",
+                    "Reveals user frustrations",
+                    "Captures authentic reactions"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which factor is LEAST important in understanding users?",
+                options: [
+                    "Demographics",
+                    "Goals and motivations",
+                    "Cognitive limitations",
+                    "Backend server speed"
+                ],
+                correct: 3
+            },
+            {
+                question: "Empathy maps in UX are used to:",
+                options: [
+                    "Visualize what users think, feel, say, and do",
+                    "Replace personas",
+                    "Optimize coding structure",
+                    "Predict competitor pricing"
+                ],
+                correct: 0
+            },
+            {
+                question: "Journey maps focus on:",
+                options: [
+                    "Backend flow diagrams",
+                    "Steps and emotions a user experiences across touchpoints",
+                    "Competitor server structures",
+                    "Database schema mapping"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which method best uncovers the 'why' behind user actions?",
+                options: [
+                    "Quantitative analytics",
+                    "Qualitative research",
+                    "Server performance metrics",
+                    "A/B testing"
+                ],
+                correct: 1
+            },
+            {
+                question: "The most critical skill for a UX researcher is:",
+                options: [
+                    "Programming in SQL",
+                    "Empathy towards users",
+                    "Server monitoring",
+                    "Marketing optimization"
+                ],
+                correct: 1
+            }
+        ];
+
+        // Quiz state
+        let currentQuestion = 0;
+        let score = 0;
+        let userAnswers = new Array(quizData.length).fill(null);
+
+        // DOM elements
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const currentQuestionSpan = document.getElementById('current-question');
+        const totalQuestionsSpan = document.getElementById('total-questions');
+        const currentScoreSpan = document.getElementById('current-score');
+        const quizContainer = document.getElementById('quiz-container');
+        const resultsContainer = document.getElementById('results-container');
+        const finalScoreSpan = document.getElementById('final-score');
+        const correctAnswersSpan = document.getElementById('correct-answers');
+        const totalQuestionsResultSpan = document.getElementById('total-questions-result');
+        const scoreMessage = document.getElementById('score-message');
+        const restartBtn = document.getElementById('restart-btn');
+        const qNumber = document.getElementById('q-number');
+        const progressBar = document.getElementById('progress-bar');
+
+        // Initialize quiz
+        function initQuiz() {
+            totalQuestionsSpan.textContent = quizData.length;
+            totalQuestionsResultSpan.textContent = quizData.length;
+            updateProgressBar();
+            showQuestion();
+        }
+
+        // Update progress bar
+        function updateProgressBar() {
+            const progress = ((currentQuestion + 1) / quizData.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        // Display current question
+        function showQuestion() {
+            const question = quizData[currentQuestion];
+            questionText.textContent = question.question;
+            qNumber.textContent = currentQuestion + 1;
+            currentQuestionSpan.textContent = currentQuestion + 1;
+            
+            // Clear previous options
+            optionsContainer.innerHTML = '';
+            
+            // Create new options
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.classList.add('option');
+                optionElement.textContent = option;
+                
+                // Check if this option was previously selected
+                if (userAnswers[currentQuestion] === index) {
+                    optionElement.classList.add('selected');
+                }
+                
+                optionElement.addEventListener('click', () => selectOption(index));
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            // Update navigation buttons
+            updateNavigation();
+            updateProgressBar();
+        }
+
+        // Select an option
+        function selectOption(optionIndex) {
+            // Remove selected class from all options
+            const options = document.querySelectorAll('.option');
+            options.forEach(option => option.classList.remove('selected'));
+            
+            // Add selected class to clicked option
+            options[optionIndex].classList.add('selected');
+            
+            // Save user's answer
+            userAnswers[currentQuestion] = optionIndex;
+            
+            // Update score if this is a new answer
+            if (optionIndex === quizData[currentQuestion].correct) {
+                // Only add to score if this question wasn't already answered correctly
+                if (userAnswers[currentQuestion] !== quizData[currentQuestion].correct) {
+                    score++;
+                    currentScoreSpan.textContent = score;
+                }
+            } else {
+                // If changing from correct to incorrect answer, decrease score
+                if (userAnswers[currentQuestion] === quizData[currentQuestion].correct) {
+                    score--;
+                    currentScoreSpan.textContent = score;
+                }
+            }
+        }
+
+        // Update navigation buttons
+        function updateNavigation() {
+            prevBtn.disabled = currentQuestion === 0;
+            
+            if (currentQuestion === quizData.length - 1) {
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+            }
+        }
+
+        // Navigate to next question
+        function nextQuestion() {
+            if (currentQuestion < quizData.length - 1) {
+                currentQuestion++;
+                showQuestion();
+            }
+        }
+
+        // Navigate to previous question
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion();
+            }
+        }
+
+        // Submit quiz and show results
+        function submitQuiz() {
+            // Calculate final score
+            let finalScore = 0;
+            userAnswers.forEach((answer, index) => {
+                if (answer === quizData[index].correct) {
+                    finalScore++;
+                }
+            });
+            
+            // Update results
+            const percentage = Math.round((finalScore / quizData.length) * 100);
+            finalScoreSpan.textContent = `${percentage}%`;
+            correctAnswersSpan.textContent = finalScore;
+            
+            // Set score message
+            if (percentage >= 90) {
+                scoreMessage.textContent = "Excellent! You're a UX research expert!";
+            } else if (percentage >= 70) {
+                scoreMessage.textContent = "Great job! You know your UX research methods.";
+            } else if (percentage >= 50) {
+                scoreMessage.textContent = "Good effort! Keep learning UX research concepts.";
+            } else {
+                scoreMessage.textContent = "Keep studying! UX research takes practice.";
+            }
+            
+            // Update the score circle with animation
+            const scoreCircle = document.querySelector('.score-circle');
+            scoreCircle.style.background = `conic-gradient(var(--success) 0% ${percentage}%, #eaeaea ${percentage}% 100%)`;
+            
+            // Show results and hide quiz
+            quizContainer.classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+        }
+
+        // Restart quiz
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            userAnswers.fill(null);
+            currentScoreSpan.textContent = score;
+            quizContainer.classList.remove('hidden');
+            resultsContainer.classList.add('hidden');
+            showQuestion();
+        }
+
+        // Event listeners
+        prevBtn.addEventListener('click', prevQuestion);
+        nextBtn.addEventListener('click', nextQuestion);
+        submitBtn.addEventListener('click', submitQuiz);
+        restartBtn.addEventListener('click', restartQuiz);
+
+        // Initialize the quiz
+        initQuiz();
+    </script>
+</body>
+</html>
