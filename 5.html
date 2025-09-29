@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UX Design Fundamentals Quiz</title>
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #6b8cbc;
+            --accent: #ff7e5f;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --success: #28a745;
+            --danger: #dc3545;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .description {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .quiz-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+
+        .question-counter, .score-display {
+            font-weight: bold;
+        }
+
+        .question-container {
+            margin-bottom: 25px;
+        }
+
+        .question-number {
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option {
+            padding: 15px;
+            border: 2px solid #eaeaea;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .option:hover {
+            background-color: #f8f9fa;
+            border-color: var(--secondary);
+        }
+
+        .option.selected {
+            background-color: #e6f2ff;
+            border-color: var(--primary);
+        }
+
+        .option.correct {
+            background-color: #d4edda;
+            border-color: var(--success);
+        }
+
+        .option.incorrect {
+            background-color: #f8d7da;
+            border-color: var(--danger);
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: var(--primary);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        button:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #submit-btn {
+            background-color: var(--accent);
+        }
+
+        #submit-btn:hover {
+            background-color: #ff9c86;
+        }
+
+        .results-container {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: conic-gradient(var(--success) 0% 0%, #eaeaea 0% 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+
+        .score-circle::before {
+            content: '';
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background-color: white;
+            border-radius: 50%;
+        }
+
+        .score-value {
+            position: relative;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--dark);
+        }
+
+        .score-text {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .restart-btn {
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .quiz-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .navigation {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>UX Design Fundamentals Quiz</h1>
+            <p class="description">Test your knowledge of UX design concepts, tools, and methodologies</p>
+        </header>
+
+        <div class="quiz-info">
+            <div class="question-counter">Question: <span id="current-question">1</span> / <span id="total-questions">40</span></div>
+            <div class="score-display">Score: <span id="current-score">0</span></div>
+        </div>
+
+        <div id="quiz-container">
+            <div class="question-container">
+                <div class="question-number">Question <span id="q-number">1</span></div>
+                <div class="question-text" id="question-text"></div>
+                <div class="options-container" id="options-container"></div>
+            </div>
+
+            <div class="navigation">
+                <button id="prev-btn" disabled>Previous</button>
+                <button id="next-btn">Next</button>
+                <button id="submit-btn" class="hidden">Submit Quiz</button>
+            </div>
+        </div>
+
+        <div id="results-container" class="results-container hidden">
+            <div class="score-circle">
+                <div class="score-value" id="final-score">0%</div>
+            </div>
+            <h2 class="score-text" id="score-message">Quiz Completed!</h2>
+            <p id="score-details">You scored <span id="correct-answers">0</span> out of <span id="total-questions-result">40</span> questions correctly.</p>
+            <button id="restart-btn" class="restart-btn">Restart Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        // Quiz questions and answers
+        const quizData = [
+            {
+                question: "A design mock up is best described as:",
+                options: [
+                    "A low-level database schema",
+                    "A static visual representation of a design idea",
+                    "The final coded product",
+                    "A server-side testing tool"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which type of mockup is MOST suitable for client presentations?",
+                options: [
+                    "Paper sketches",
+                    "High-fidelity digital mockups",
+                    "Abstract diagrams",
+                    "Random wireframes"
+                ],
+                correct: 1
+            },
+            {
+                question: "Low-fidelity mockups are useful because they:",
+                options: [
+                    "Allow fast idea validation at early stages",
+                    "Replace final coding",
+                    "Reduce need for user feedback",
+                    "Work as prototypes directly"
+                ],
+                correct: 0
+            },
+            {
+                question: "A key limitation of static mockups is:",
+                options: [
+                    "They don't convey interactions or functionality",
+                    "They consume too much memory",
+                    "They are harder to create than coding",
+                    "They remove need for wireframes"
+                ],
+                correct: 0
+            },
+            {
+                question: "Mid-fidelity mockups generally use:",
+                options: [
+                    "Simple grayscale wireframes with partial details",
+                    "Fully coded interfaces",
+                    "Server schemas",
+                    "Only hand-drawn sketches"
+                ],
+                correct: 0
+            },
+            {
+                question: "A user persona represents:",
+                options: [
+                    "Real users with personal identifiable data",
+                    "Fictional archetypes representing target users",
+                    "Server-side profiles",
+                    "Database indexing"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which is NOT typically included in a persona?",
+                options: [
+                    "Goals",
+                    "Behaviors",
+                    "IP address",
+                    "Frustrations"
+                ],
+                correct: 2
+            },
+            {
+                question: "Scenarios in UX design describe:",
+                options: [
+                    "Possible user situations and tasks",
+                    "Database errors",
+                    "Backend server logs",
+                    "Graphic styles"
+                ],
+                correct: 0
+            },
+            {
+                question: "A well-written user story is structured as:",
+                options: [
+                    "'As a [user], I want [goal], so that [reason].'",
+                    "'If-else statements describing a flow.'",
+                    "'Database trigger functions.'",
+                    "'Random task sequence.'"
+                ],
+                correct: 0
+            },
+            {
+                question: "Personas and scenarios are primarily used to:",
+                options: [
+                    "Align design decisions with user needs",
+                    "Replace coding documentation",
+                    "Optimize SQL queries",
+                    "Generate server load balancing"
+                ],
+                correct: 0
+            },
+            {
+                question: "Design ideation focuses on:",
+                options: [
+                    "Generating multiple possible design solutions",
+                    "Optimizing backend servers",
+                    "Testing finished code",
+                    "Reducing user feedback"
+                ],
+                correct: 0
+            },
+            {
+                question: "Brainstorming, mind mapping, and 'crazy eights' are techniques for:",
+                options: [
+                    "Ideation",
+                    "Wireframing",
+                    "Storyboarding",
+                    "Taxonomy"
+                ],
+                correct: 0
+            },
+            {
+                question: "The advantage of sketching during ideation is:",
+                options: [
+                    "Quick visualization of multiple ideas",
+                    "High precision coding",
+                    "Final product release",
+                    "Avoiding collaboration"
+                ],
+                correct: 0
+            },
+            {
+                question: "Sketches are considered:",
+                options: [
+                    "Low-fidelity design artifacts",
+                    "Final prototypes",
+                    "Backend blueprints",
+                    "High-fidelity digital assets"
+                ],
+                correct: 0
+            },
+            {
+                question: "Divergent thinking in ideation means:",
+                options: [
+                    "Exploring many different design directions",
+                    "Focusing on one single solution",
+                    "Optimizing system speed",
+                    "Removing user testing"
+                ],
+                correct: 0
+            },
+            {
+                question: "A UX storyboard usually contains:",
+                options: [
+                    "A sequence of frames showing user interaction steps",
+                    "SQL schema diagrams",
+                    "Marketing sales graphs",
+                    "Backend code"
+                ],
+                correct: 0
+            },
+            {
+                question: "The primary purpose of storyboarding in UX is:",
+                options: [
+                    "To visualize user journeys over time",
+                    "To replace prototypes completely",
+                    "To test backend performance",
+                    "To create database triggers"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which element is NOT commonly part of UX storyboards?",
+                options: [
+                    "User actions",
+                    "System responses",
+                    "Server IPs",
+                    "Contextual environment"
+                ],
+                correct: 2
+            },
+            {
+                question: "Storyboarding is MOST effective for:",
+                options: [
+                    "Communicating design flow to stakeholders",
+                    "Debugging server issues",
+                    "Replacing taxonomy in IA",
+                    "Conducting performance testing"
+                ],
+                correct: 0
+            },
+            {
+                question: "The difference between a wireframe and a storyboard is:",
+                options: [
+                    "Wireframes show layout; storyboards show narrative context",
+                    "Storyboards are coded; wireframes are sketches",
+                    "Wireframes are for backend; storyboards for frontend",
+                    "Both are identical"
+                ],
+                correct: 0
+            },
+            {
+                question: "A wireframe is best described as:",
+                options: [
+                    "A skeletal outline of interface layout",
+                    "A fully coded prototype",
+                    "A backend schema",
+                    "A database flowchart"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which is NOT typically shown in wireframes?",
+                options: [
+                    "Content placement",
+                    "Navigation layout",
+                    "Exact branding colors and imagery",
+                    "Functional hierarchy"
+                ],
+                correct: 2
+            },
+            {
+                question: "Low-fidelity wireframes are often:",
+                options: [
+                    "Sketches or grayscale layouts",
+                    "Fully interactive prototypes",
+                    "Final design mockups",
+                    "Server performance diagrams"
+                ],
+                correct: 0
+            },
+            {
+                question: "Annotated wireframes differ from basic wireframes because they:",
+                options: [
+                    "Include notes explaining design decisions",
+                    "Replace prototypes",
+                    "Show SQL schema mapping",
+                    "Work as storyboards"
+                ],
+                correct: 0
+            },
+            {
+                question: "Wireframes help teams:",
+                options: [
+                    "Focus on structure before visual details",
+                    "Finalize backend systems",
+                    "Eliminate user testing",
+                    "Replace personas"
+                ],
+                correct: 0
+            },
+            {
+                question: "A prototype differs from a mockup because it:",
+                options: [
+                    "Demonstrates interaction and functionality",
+                    "Is only static",
+                    "Cannot be tested",
+                    "Replaces backend coding"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which type of prototype uses simple paper sketches to simulate interaction?",
+                options: [
+                    "Low-fidelity prototype",
+                    "High-fidelity prototype",
+                    "Live coded prototype",
+                    "Backend schema prototype"
+                ],
+                correct: 0
+            },
+            {
+                question: "A clickable digital prototype created in Adobe XD is:",
+                options: [
+                    "Mid-to-high fidelity prototype",
+                    "Database schema",
+                    "Random storyboard",
+                    "Server load model"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which prototype type is BEST for user testing final product flow?",
+                options: [
+                    "High-fidelity prototype",
+                    "Paper prototype",
+                    "Abstract storyboard",
+                    "Database mapping"
+                ],
+                correct: 0
+            },
+            {
+                question: "Horizontal prototypes focus on:",
+                options: [
+                    "Breadth of features with limited functionality depth",
+                    "Depth of one feature with minimal breadth",
+                    "Backend server flow",
+                    "Random ideation"
+                ],
+                correct: 0
+            },
+            {
+                question: "Vertical prototypes focus on:",
+                options: [
+                    "Depth of one function or feature",
+                    "All features equally",
+                    "Server indexing",
+                    "Wireframe sketches only"
+                ],
+                correct: 0
+            },
+            {
+                question: "Evolutionary prototyping refers to:",
+                options: [
+                    "Building on successive iterations until final product",
+                    "One-time throwaway prototypes",
+                    "Backend schema growth",
+                    "Random storyboarding"
+                ],
+                correct: 0
+            },
+            {
+                question: "A 'throwaway prototype' is:",
+                options: [
+                    "Created quickly to explore ideas, then discarded",
+                    "Always reused for final product",
+                    "The same as a mockup",
+                    "Backend schema diagram"
+                ],
+                correct: 0
+            },
+            {
+                question: "Wizard-of-Oz prototyping means:",
+                options: [
+                    "A human simulates system responses unseen by users",
+                    "Full backend automation",
+                    "Randomized design testing",
+                    "Server-based prototyping"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which prototype is MOST resource-intensive to create?",
+                options: [
+                    "High-fidelity interactive prototype",
+                    "Paper prototype",
+                    "Storyboard prototype",
+                    "Low-fidelity mockup"
+                ],
+                correct: 0
+            },
+            {
+                question: "The key purpose of prototyping in UX is:",
+                options: [
+                    "Testing usability before final development",
+                    "Optimizing backend performance",
+                    "Eliminating design iterations",
+                    "Reducing user research"
+                ],
+                correct: 0
+            },
+            {
+                question: "Early-stage prototypes help teams:",
+                options: [
+                    "Identify usability issues before coding",
+                    "Replace personas and scenarios",
+                    "Avoid research costs",
+                    "Finalize backend performance"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which prototyping method allows testing of navigation flow without backend coding?",
+                options: [
+                    "Clickable prototypes in Adobe XD",
+                    "Server schema mapping",
+                    "SQL query testing",
+                    "Backend debugging"
+                ],
+                correct: 0
+            },
+            {
+                question: "Iterative prototyping aligns with which software development model?",
+                options: [
+                    "Agile",
+                    "Waterfall",
+                    "V-model",
+                    "Spiral without testing"
+                ],
+                correct: 0
+            },
+            {
+                question: "The integration of mockups, wireframes, and prototypes ensures:",
+                options: [
+                    "Progressive refinement from concept to functional test model",
+                    "Server architecture finalization only",
+                    "Avoidance of usability testing",
+                    "Elimination of design strategy"
+                ],
+                correct: 0
+            }
+        ];
+
+        // Quiz state
+        let currentQuestion = 0;
+        let score = 0;
+        let userAnswers = new Array(quizData.length).fill(null);
+
+        // DOM elements
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const currentQuestionSpan = document.getElementById('current-question');
+        const totalQuestionsSpan = document.getElementById('total-questions');
+        const currentScoreSpan = document.getElementById('current-score');
+        const quizContainer = document.getElementById('quiz-container');
+        const resultsContainer = document.getElementById('results-container');
+        const finalScoreSpan = document.getElementById('final-score');
+        const correctAnswersSpan = document.getElementById('correct-answers');
+        const totalQuestionsResultSpan = document.getElementById('total-questions-result');
+        const scoreMessage = document.getElementById('score-message');
+        const restartBtn = document.getElementById('restart-btn');
+        const qNumber = document.getElementById('q-number');
+
+        // Initialize quiz
+        function initQuiz() {
+            totalQuestionsSpan.textContent = quizData.length;
+            totalQuestionsResultSpan.textContent = quizData.length;
+            showQuestion();
+        }
+
+        // Display current question
+        function showQuestion() {
+            const question = quizData[currentQuestion];
+            questionText.textContent = question.question;
+            qNumber.textContent = currentQuestion + 1;
+            currentQuestionSpan.textContent = currentQuestion + 1;
+            
+            // Clear previous options
+            optionsContainer.innerHTML = '';
+            
+            // Create new options
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.classList.add('option');
+                optionElement.textContent = option;
+                
+                // Check if this option was previously selected
+                if (userAnswers[currentQuestion] === index) {
+                    optionElement.classList.add('selected');
+                }
+                
+                optionElement.addEventListener('click', () => selectOption(index));
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            // Update navigation buttons
+            updateNavigation();
+        }
+
+        // Select an option
+        function selectOption(optionIndex) {
+            // Remove selected class from all options
+            const options = document.querySelectorAll('.option');
+            options.forEach(option => option.classList.remove('selected'));
+            
+            // Add selected class to clicked option
+            options[optionIndex].classList.add('selected');
+            
+            // Save user's answer
+            userAnswers[currentQuestion] = optionIndex;
+            
+            // Update score if this is a new answer
+            if (optionIndex === quizData[currentQuestion].correct) {
+                // Only add to score if this question wasn't already answered correctly
+                if (userAnswers[currentQuestion] !== quizData[currentQuestion].correct) {
+                    score++;
+                    currentScoreSpan.textContent = score;
+                }
+            } else {
+                // If changing from correct to incorrect answer, decrease score
+                if (userAnswers[currentQuestion] === quizData[currentQuestion].correct) {
+                    score--;
+                    currentScoreSpan.textContent = score;
+                }
+            }
+        }
+
+        // Update navigation buttons
+        function updateNavigation() {
+            prevBtn.disabled = currentQuestion === 0;
+            
+            if (currentQuestion === quizData.length - 1) {
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+            }
+        }
+
+        // Navigate to next question
+        function nextQuestion() {
+            if (currentQuestion < quizData.length - 1) {
+                currentQuestion++;
+                showQuestion();
+            }
+        }
+
+        // Navigate to previous question
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion();
+            }
+        }
+
+        // Submit quiz and show results
+        function submitQuiz() {
+            // Calculate final score
+            let finalScore = 0;
+            userAnswers.forEach((answer, index) => {
+                if (answer === quizData[index].correct) {
+                    finalScore++;
+                }
+            });
+            
+            // Update results
+            const percentage = Math.round((finalScore / quizData.length) * 100);
+            finalScoreSpan.textContent = `${percentage}%`;
+            correctAnswersSpan.textContent = finalScore;
+            
+            // Set score message
+            if (percentage >= 90) {
+                scoreMessage.textContent = "Excellent! You're a UX expert!";
+            } else if (percentage >= 70) {
+                scoreMessage.textContent = "Great job! You know your UX fundamentals.";
+            } else if (percentage >= 50) {
+                scoreMessage.textContent = "Good effort! Keep learning UX concepts.";
+            } else {
+                scoreMessage.textContent = "Keep studying! UX design takes practice.";
+            }
+            
+            // Update the score circle with animation
+            const scoreCircle = document.querySelector('.score-circle');
+            scoreCircle.style.background = `conic-gradient(var(--success) 0% ${percentage}%, #eaeaea ${percentage}% 100%)`;
+            
+            // Show results and hide quiz
+            quizContainer.classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+        }
+
+        // Restart quiz
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            userAnswers.fill(null);
+            currentScoreSpan.textContent = score;
+            quizContainer.classList.remove('hidden');
+            resultsContainer.classList.add('hidden');
+            showQuestion();
+        }
+
+        // Event listeners
+        prevBtn.addEventListener('click', prevQuestion);
+        nextBtn.addEventListener('click', nextQuestion);
+        submitBtn.addEventListener('click', submitQuiz);
+        restartBtn.addEventListener('click', restartQuiz);
+
+        // Initialize the quiz
+        initQuiz();
+    </script>
+</body>
+</html>
