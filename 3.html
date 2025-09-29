@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Design in UX Quiz</title>
+    <style>
+        :root {
+            --primary: #8a6bc9;
+            --secondary: #a68fd9;
+            --accent: #ff8a8a;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --success: #28a745;
+            --danger: #dc3545;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .description {
+            color: #666;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .quiz-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+
+        .question-counter, .score-display {
+            font-weight: bold;
+        }
+
+        .question-container {
+            margin-bottom: 25px;
+        }
+
+        .question-number {
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option {
+            padding: 15px;
+            border: 2px solid #eaeaea;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .option:hover {
+            background-color: #f8f9fa;
+            border-color: var(--secondary);
+        }
+
+        .option.selected {
+            background-color: #e6f2ff;
+            border-color: var(--primary);
+        }
+
+        .option.correct {
+            background-color: #d4edda;
+            border-color: var(--success);
+        }
+
+        .option.incorrect {
+            background-color: #f8d7da;
+            border-color: var(--danger);
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: var(--primary);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        button:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #submit-btn {
+            background-color: var(--accent);
+        }
+
+        #submit-btn:hover {
+            background-color: #ffa5a5;
+        }
+
+        .results-container {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: conic-gradient(var(--success) 0% 0%, #eaeaea 0% 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+
+        .score-circle::before {
+            content: '';
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background-color: white;
+            border-radius: 50%;
+        }
+
+        .score-value {
+            position: relative;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--dark);
+        }
+
+        .score-text {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .restart-btn {
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background-color: #eaeaea;
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .quiz-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .navigation {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Visual Design in UX Quiz</h1>
+            <p class="description">Test your knowledge of visual design principles, atomic design, color theory, typography, and composition in UX</p>
+        </header>
+
+        <div class="quiz-info">
+            <div class="question-counter">Question: <span id="current-question">1</span> / <span id="total-questions">40</span></div>
+            <div class="score-display">Score: <span id="current-score">0</span></div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress" id="progress-bar"></div>
+        </div>
+
+        <div id="quiz-container">
+            <div class="question-container">
+                <div class="question-number">Question <span id="q-number">1</span></div>
+                <div class="question-text" id="question-text"></div>
+                <div class="options-container" id="options-container"></div>
+            </div>
+
+            <div class="navigation">
+                <button id="prev-btn" disabled>Previous</button>
+                <button id="next-btn">Next</button>
+                <button id="submit-btn" class="hidden">Submit Quiz</button>
+            </div>
+        </div>
+
+        <div id="results-container" class="results-container hidden">
+            <div class="score-circle">
+                <div class="score-value" id="final-score">0%</div>
+            </div>
+            <h2 class="score-text" id="score-message">Quiz Completed!</h2>
+            <p id="score-details">You scored <span id="correct-answers">0</span> out of <span id="total-questions-result">40</span> questions correctly.</p>
+            <button id="restart-btn" class="restart-btn">Restart Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        // Quiz questions and answers
+        const quizData = [
+            {
+                question: "Visual design in UX primarily focuses on:",
+                options: [
+                    "Backend code optimization",
+                    "Enhancing aesthetics while supporting usability and functionality",
+                    "Marketing brand promotions",
+                    "Reducing server cost"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which is NOT a direct concern of visual design?",
+                options: [
+                    "Layout and composition",
+                    "Color psychology",
+                    "User navigation flow",
+                    "Database indexing"
+                ],
+                correct: 3
+            },
+            {
+                question: "Visual design differs from graphic design because it:",
+                options: [
+                    "Ignores usability",
+                    "Balances aesthetics with functionality in digital products",
+                    "Focuses purely on branding",
+                    "Works only on print media"
+                ],
+                correct: 1
+            },
+            {
+                question: "A visually pleasing app with poor usability demonstrates:",
+                options: [
+                    "Good UX",
+                    "Weak visual design",
+                    "Visual design without UX integration",
+                    "Strong backend efficiency"
+                ],
+                correct: 2
+            },
+            {
+                question: "Which of the following best describes the purpose of visual design?",
+                options: [
+                    "To make designs entertaining",
+                    "To support communication, usability, and engagement through visuals",
+                    "To minimize development costs",
+                    "To optimize SQL queries"
+                ],
+                correct: 1
+            },
+            {
+                question: "Atomic design is based on the idea of:",
+                options: [
+                    "Breaking visual design into code-only components",
+                    "Structuring design into reusable building blocks like atoms and molecules",
+                    "Designing databases in hierarchical form",
+                    "Focusing only on typography rules"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which of the following is the smallest building block in atomic design?",
+                options: [
+                    "Organism",
+                    "Molecule",
+                    "Atom",
+                    "Template"
+                ],
+                correct: 2
+            },
+            {
+                question: "A search input field with a button is an example of which atomic design component?",
+                options: [
+                    "Atom",
+                    "Molecule",
+                    "Organism",
+                    "Page"
+                ],
+                correct: 1
+            },
+            {
+                question: "In atomic design, a header section with logo, navigation, and search bar is:",
+                options: [
+                    "Molecule",
+                    "Atom",
+                    "Organism",
+                    "Template"
+                ],
+                correct: 2
+            },
+            {
+                question: "Templates in atomic design are best described as:",
+                options: [
+                    "Aesthetic guidelines only",
+                    "Layouts combining organisms into page structures",
+                    "Reusable typography rules",
+                    "Color palettes for screens"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which principle of color theory is MOST relevant to UX design?",
+                options: [
+                    "Hexadecimal coding",
+                    "Color contrast for readability and accessibility",
+                    "Database schema coloring",
+                    "Randomized palette choices"
+                ],
+                correct: 1
+            },
+            {
+                question: "The psychological impact of blue color in UI is generally associated with:",
+                options: [
+                    "Danger and urgency",
+                    "Calmness, trust, and professionalism",
+                    "Error states",
+                    "Playfulness and energy"
+                ],
+                correct: 1
+            },
+            {
+                question: "Using red as a button color is most effective for:",
+                options: [
+                    "Error alerts or urgent actions",
+                    "Neutral background areas",
+                    "Content readability",
+                    "Brand credibility"
+                ],
+                correct: 0
+            },
+            {
+                question: "Rounded shapes in visual design often communicate:",
+                options: [
+                    "Hardness and authority",
+                    "Friendliness and approachability",
+                    "Formal professionalism",
+                    "Ambiguity"
+                ],
+                correct: 1
+            },
+            {
+                question: "Shapes in UX design primarily serve to:",
+                options: [
+                    "Communicate hierarchy and meaning",
+                    "Optimize server flow",
+                    "Replace typography",
+                    "Reduce database load"
+                ],
+                correct: 0
+            },
+            {
+                question: "In UX, imagery should primarily be:",
+                options: [
+                    "Decorative only",
+                    "Functional, relevant, and supportive of content",
+                    "Random stock photos",
+                    "Used only in prototypes"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which type of imagery risks creating distrust in users?",
+                options: [
+                    "Authentic and contextual visuals",
+                    "Overused generic stock photos",
+                    "Illustrations matched with brand style",
+                    "Product screenshots"
+                ],
+                correct: 1
+            },
+            {
+                question: "A product tutorial with step-by-step screenshots serves as imagery that is:",
+                options: [
+                    "Desirable but irrelevant",
+                    "Functional and supportive",
+                    "Misleading",
+                    "Distracting"
+                ],
+                correct: 1
+            },
+            {
+                question: "The best practice for imagery in UX is:",
+                options: [
+                    "Compressing and optimizing for faster load time",
+                    "Using the largest possible files",
+                    "Applying random decorative pictures",
+                    "Using only monochrome visuals"
+                ],
+                correct: 0
+            },
+            {
+                question: "Illustrations are often preferred in UX because:",
+                options: [
+                    "They increase database storage",
+                    "They provide unique branding and emotional appeal",
+                    "They avoid user engagement",
+                    "They reduce navigation flow"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which of the following is a key rule of typography in UX?",
+                options: [
+                    "Use as many fonts as possible",
+                    "Ensure readability with clear hierarchy",
+                    "Ignore text spacing",
+                    "Prefer decorative fonts everywhere"
+                ],
+                correct: 1
+            },
+            {
+                question: "Sans-serif fonts are generally considered better for digital interfaces because:",
+                options: [
+                    "They are more complex",
+                    "They are easier to read on screens",
+                    "They reduce design flexibility",
+                    "They increase storage size"
+                ],
+                correct: 1
+            },
+            {
+                question: "Line spacing in typography affects:",
+                options: [
+                    "Color palette",
+                    "Readability and user comfort",
+                    "Database schema",
+                    "Brand trust directly"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which best practice improves hierarchy in typography?",
+                options: [
+                    "Using size, weight, and color variations",
+                    "Randomizing fonts",
+                    "Keeping all text identical",
+                    "Avoiding bold styles"
+                ],
+                correct: 0
+            },
+            {
+                question: "Overusing capital letters in UX typography can:",
+                options: [
+                    "Improve readability",
+                    "Decrease readability and look aggressive",
+                    "Increase accessibility",
+                    "Replace imagery effectively"
+                ],
+                correct: 1
+            },
+            {
+                question: "Primary buttons in UX should:",
+                options: [
+                    "Look identical to secondary buttons",
+                    "Be visually distinct and emphasize main actions",
+                    "Be hidden from users",
+                    "Replace navigation menus"
+                ],
+                correct: 1
+            },
+            {
+                question: "A disabled button state is used to:",
+                options: [
+                    "Show unavailable actions",
+                    "Confuse users",
+                    "Highlight primary CTAs",
+                    "Replace input validation"
+                ],
+                correct: 0
+            },
+            {
+                question: "The best placement for a button is usually:",
+                options: [
+                    "In unpredictable locations",
+                    "In consistent, expected positions aligned with flow",
+                    "At random across screens",
+                    "Only at the top corner"
+                ],
+                correct: 1
+            },
+            {
+                question: "Button micro-interactions (hover, ripple, animation) improve:",
+                options: [
+                    "Database speed",
+                    "User feedback and engagement",
+                    "Marketing data",
+                    "Server caching"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which of the following is a good accessibility practice for buttons?",
+                options: [
+                    "High color contrast and large touch targets",
+                    "Random colors with small targets",
+                    "Using only icons without labels",
+                    "Making all buttons the same color"
+                ],
+                correct: 0
+            },
+            {
+                question: "Grids in visual design primarily help to:",
+                options: [
+                    "Store database records",
+                    "Maintain alignment and consistency across layouts",
+                    "Randomize design elements",
+                    "Replace imagery"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which grid system is most commonly used in web design?",
+                options: [
+                    "5-column",
+                    "12-column",
+                    "3-column",
+                    "7-column"
+                ],
+                correct: 1
+            },
+            {
+                question: "The primary purpose of white space in composition is to:",
+                options: [
+                    "Waste screen space",
+                    "Improve readability and focus",
+                    "Hide design flaws",
+                    "Reduce loading speed"
+                ],
+                correct: 1
+            },
+            {
+                question: "Poor alignment in structure leads to:",
+                options: [
+                    "Strong hierarchy",
+                    "Visual clutter and confusion",
+                    "Faster user decisions",
+                    "Improved readability"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which composition principle ensures balanced distribution of elements?",
+                options: [
+                    "Contrast",
+                    "Symmetry and asymmetry balance",
+                    "Random alignment",
+                    "Typography size"
+                ],
+                correct: 1
+            },
+            {
+                question: "Visual hierarchy in UX ensures that:",
+                options: [
+                    "Every element looks identical",
+                    "Users know which content is most important",
+                    "Buttons replace typography",
+                    "Backend processes are optimized"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which design technique BEST establishes hierarchy?",
+                options: [
+                    "Varying size, color, and contrast",
+                    "Keeping all text and visuals the same",
+                    "Using only grayscale visuals",
+                    "Random placement"
+                ],
+                correct: 0
+            },
+            {
+                question: "A hover effect on a link demonstrates which state?",
+                options: [
+                    "Active state",
+                    "Disabled state",
+                    "Hover state",
+                    "Default state"
+                ],
+                correct: 2
+            },
+            {
+                question: "Which state indicates that a button action has been successfully executed?",
+                options: [
+                    "Hover",
+                    "Active/Pressed",
+                    "Default",
+                    "Disabled"
+                ],
+                correct: 1
+            },
+            {
+                question: "Visual hierarchy is MOST important when:",
+                options: [
+                    "Users need to scan and prioritize content quickly",
+                    "Designers want to reduce backend work",
+                    "Developers test SQL queries",
+                    "Servers allocate resources"
+                ],
+                correct: 0
+            }
+        ];
+
+        // Quiz state
+        let currentQuestion = 0;
+        let score = 0;
+        let userAnswers = new Array(quizData.length).fill(null);
+
+        // DOM elements
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const currentQuestionSpan = document.getElementById('current-question');
+        const totalQuestionsSpan = document.getElementById('total-questions');
+        const currentScoreSpan = document.getElementById('current-score');
+        const quizContainer = document.getElementById('quiz-container');
+        const resultsContainer = document.getElementById('results-container');
+        const finalScoreSpan = document.getElementById('final-score');
+        const correctAnswersSpan = document.getElementById('correct-answers');
+        const totalQuestionsResultSpan = document.getElementById('total-questions-result');
+        const scoreMessage = document.getElementById('score-message');
+        const restartBtn = document.getElementById('restart-btn');
+        const qNumber = document.getElementById('q-number');
+        const progressBar = document.getElementById('progress-bar');
+
+        // Initialize quiz
+        function initQuiz() {
+            totalQuestionsSpan.textContent = quizData.length;
+            totalQuestionsResultSpan.textContent = quizData.length;
+            updateProgressBar();
+            showQuestion();
+        }
+
+        // Update progress bar
+        function updateProgressBar() {
+            const progress = ((currentQuestion + 1) / quizData.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        // Display current question
+        function showQuestion() {
+            const question = quizData[currentQuestion];
+            questionText.textContent = question.question;
+            qNumber.textContent = currentQuestion + 1;
+            currentQuestionSpan.textContent = currentQuestion + 1;
+            
+            // Clear previous options
+            optionsContainer.innerHTML = '';
+            
+            // Create new options
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.classList.add('option');
+                optionElement.textContent = option;
+                
+                // Check if this option was previously selected
+                if (userAnswers[currentQuestion] === index) {
+                    optionElement.classList.add('selected');
+                }
+                
+                optionElement.addEventListener('click', () => selectOption(index));
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            // Update navigation buttons
+            updateNavigation();
+            updateProgressBar();
+        }
+
+        // Select an option
+        function selectOption(optionIndex) {
+            // Remove selected class from all options
+            const options = document.querySelectorAll('.option');
+            options.forEach(option => option.classList.remove('selected'));
+            
+            // Add selected class to clicked option
+            options[optionIndex].classList.add('selected');
+            
+            // Save user's answer
+            userAnswers[currentQuestion] = optionIndex;
+            
+            // Update score if this is a new answer
+            if (optionIndex === quizData[currentQuestion].correct) {
+                // Only add to score if this question wasn't already answered correctly
+                if (userAnswers[currentQuestion] !== quizData[currentQuestion].correct) {
+                    score++;
+                    currentScoreSpan.textContent = score;
+                }
+            } else {
+                // If changing from correct to incorrect answer, decrease score
+                if (userAnswers[currentQuestion] === quizData[currentQuestion].correct) {
+                    score--;
+                    currentScoreSpan.textContent = score;
+                }
+            }
+        }
+
+        // Update navigation buttons
+        function updateNavigation() {
+            prevBtn.disabled = currentQuestion === 0;
+            
+            if (currentQuestion === quizData.length - 1) {
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+            }
+        }
+
+        // Navigate to next question
+        function nextQuestion() {
+            if (currentQuestion < quizData.length - 1) {
+                currentQuestion++;
+                showQuestion();
+            }
+        }
+
+        // Navigate to previous question
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion();
+            }
+        }
+
+        // Submit quiz and show results
+        function submitQuiz() {
+            // Calculate final score
+            let finalScore = 0;
+            userAnswers.forEach((answer, index) => {
+                if (answer === quizData[index].correct) {
+                    finalScore++;
+                }
+            });
+            
+            // Update results
+            const percentage = Math.round((finalScore / quizData.length) * 100);
+            finalScoreSpan.textContent = `${percentage}%`;
+            correctAnswersSpan.textContent = finalScore;
+            
+            // Set score message
+            if (percentage >= 90) {
+                scoreMessage.textContent = "Excellent! You're a visual design expert!";
+            } else if (percentage >= 70) {
+                scoreMessage.textContent = "Great job! You know your visual design principles.";
+            } else if (percentage >= 50) {
+                scoreMessage.textContent = "Good effort! Keep learning visual design concepts.";
+            } else {
+                scoreMessage.textContent = "Keep studying! Visual design takes practice.";
+            }
+            
+            // Update the score circle with animation
+            const scoreCircle = document.querySelector('.score-circle');
+            scoreCircle.style.background = `conic-gradient(var(--success) 0% ${percentage}%, #eaeaea ${percentage}% 100%)`;
+            
+            // Show results and hide quiz
+            quizContainer.classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+        }
+
+        // Restart quiz
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            userAnswers.fill(null);
+            currentScoreSpan.textContent = score;
+            quizContainer.classList.remove('hidden');
+            resultsContainer.classList.add('hidden');
+            showQuestion();
+        }
+
+        // Event listeners
+        prevBtn.addEventListener('click', prevQuestion);
+        nextBtn.addEventListener('click', nextQuestion);
+        submitBtn.addEventListener('click', submitQuiz);
+        restartBtn.addEventListener('click', restartQuiz);
+
+        // Initialize the quiz
+        initQuiz();
+    </script>
+</body>
+</html>
