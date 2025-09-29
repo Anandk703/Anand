@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>UX Fundamentals — Quiz</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#7c3aed;--muted:#9aa4b2;--glass: rgba(255,255,255,0.03)}
+    html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+    body{background:linear-gradient(180deg,#071029 0%, #08172a 50%);color:#e6eef8;display:flex;align-items:center;justify-content:center;padding:28px}
+    .container{width:100%;max-width:920px}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+    .logo{width:56px;height:56px;background:linear-gradient(135deg,var(--accent),#2dd4bf);border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#021025}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:20px;border-radius:12px;box-shadow: 0 6px 24px rgba(2,6,23,0.6);}
+    .question-area{display:flex;gap:20px}
+    .left{flex:1}
+    .right{width:300px}
+    .question{font-size:18px;margin-bottom:12px}
+    .choices{display:grid;gap:8px}
+    .choice{background:var(--glass);padding:12px;border-radius:8px;cursor:pointer;border:1px solid transparent}
+    .choice:hover{border-color:rgba(255,255,255,0.06)}
+    .choice input{margin-right:10px}
+    .controls{display:flex;gap:10px;margin-top:14px;align-items:center}
+    button{background:var(--accent);border:none;padding:10px 12px;border-radius:8px;color:white;cursor:pointer}
+    button.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+    .progress{height:10px;background:rgba(255,255,255,0.03);border-radius:999px;overflow:hidden;margin-top:12px}
+    .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#06b6d4);width:0%}
+    .meta{font-size:13px;color:var(--muted);margin-top:12px}
+    .score{font-size:28px;font-weight:700;text-align:center;padding:18px}
+    .review-list{max-height:520px;overflow:auto;margin-top:12px}
+    .review-item{background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;margin-bottom:10px}
+    .correct{color:#a7f3d0}
+    .wrong{color:#fca5a5}
+    footer{margin-top:12px;text-align:center;color:var(--muted);font-size:13px}
+    @media (max-width:880px){.question-area{flex-direction:column}.right{width:100%}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">UX</div>
+      <div>
+        <h1>UX Fundamentals — Quiz</h1>
+        <p class="lead">40 multiple-choice questions — interactive single-file quiz. Pick answers, submit, and review correct responses.</p>
+      </div>
+    </header>
+
+    <div class="card" id="app">
+      <div class="question-area">
+        <div class="left">
+          <div class="meta" id="qmeta">Question <span id="qnum">1</span> of <span id="qtotal">40</span></div>
+          <div class="progress" aria-hidden="true"><i id="prog"></i></div>
+          <div class="question" id="questionText">Loading…</div>
+          <div class="choices" id="choices"></div>
+
+          <div class="controls">
+            <button id="prevBtn" class="secondary">← Previous</button>
+            <button id="nextBtn">Next →</button>
+            <button id="submitBtn" style="margin-left:auto;">Submit Quiz</button>
+            <button id="resetBtn" class="secondary">Reset</button>
+          </div>
+        </div>
+
+        <aside class="right">
+          <div class="card" style="padding:12px;background:transparent;box-shadow:none">
+            <div style="font-size:13px;color:var(--muted)">Progress</div>
+            <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap" id="navDots"></div>
+            <div style="margin-top:14px">
+              <div style="font-size:13px;color:var(--muted)">Answered</div>
+              <div id="answeredCount" style="font-weight:700;font-size:18px">0 / 40</div>
+            </div>
+            <div style="margin-top:10px">
+              <button id="showAnswersBtn" class="secondary">Show Correct Answers</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <div id="result" style="display:none;margin-top:18px">
+        <div class="score" id="scoreText">You scored 0 / 40</div>
+        <div style="display:flex;gap:10px;justify-content:center;margin-bottom:12px">
+          <button id="reviewBtn" class="secondary">Review Answers</button>
+          <button id="retryBtn">Retry Quiz</button>
+        </div>
+
+        <div class="review-list" id="reviewList" style="display:none"></div>
+      </div>
+
+      <footer>Tip: you can navigate with ← and → keys. This file is a single HTML document — save and open locally to run offline.</footer>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {q: "Which of the following best captures the essence of User Experience (UX)?", choices:["The graphical layout of a product interface","The emotions, perceptions, and satisfaction a user gains from interacting with a product","The coding efficiency of a product backend","The marketing approach of a product"], a:1},
+      {q: "Which is NOT a core aspect of user experience?", choices:["Usability","Aesthetics","Emotional response","Server uptime"], a:3},
+      {q: "UX is primarily concerned with:", choices:["System requirements","End-user goals and needs","Marketing campaigns","Database optimization"], a:1},
+      {q: "A user interacts with an app that is visually beautiful but difficult to navigate. This reflects poor:", choices:["Performance","UX","Branding","Coding"], a:1},
+      {q: "Which of the following statements is TRUE?", choices:["UX focuses only on visual elements.","UX is broader than UI, including emotions and satisfaction.","UX and UI are interchangeable terms.","UX is concerned with backend efficiency."], a:1},
+      {q: "Which is the first phase of the UX design process?", choices:["Testing","Research","Prototyping","Development"], a:1},
+      {q: "Wireframing typically comes under which phase of UX process?", choices:["Research","Design","Evaluation","Strategy"], a:1},
+      {q: "In the UX process, testing is performed primarily to:", choices:["Reduce coding errors","Validate design assumptions with users","Improve server performance","Finalize color palettes"], a:1},
+      {q: "Which process ensures that UX design aligns with user needs?", choices:["Competitor benchmarking","Continuous user feedback","Market campaigning","Database structuring"], a:1},
+      {q: "The UX process is often described as:", choices:["Linear and rigid","Cyclical and iterative","Random and intuitive","Fixed and predetermined"], a:1},
+      {q: "According to Peter Morville’s UX Honeycomb, which of the following is NOT one of the seven components?", choices:["Useful","Usable","Accessible","Scalable"], a:3},
+      {q: "Which UX component ensures users can easily navigate and locate what they want?", choices:["Credible","Findable","Valuable","Desirable"], a:1},
+      {q: "“The product must be free of barriers for people with disabilities.” This refers to which UX component?", choices:["Useful","Accessible","Desirable","Usable"], a:1},
+      {q: "A news app showing relevant, trustworthy articles reflects which UX component?", choices:["Credible","Valuable","Usable","Findable"], a:0},
+      {q: "A product providing a strong ROI to the organization and satisfaction to the user is:", choices:["Desirable","Valuable","Useful","Accessible"], a:1},
+      {q: "When a mobile app ensures easy onboarding for new users, it demonstrates:", choices:["Usable","Accessible","Credible","Valuable"], a:0},
+      {q: "Which component ensures design aesthetics that create emotional engagement?", choices:["Usable","Desirable","Findable","Accessible"], a:1},
+      {q: "“Useful” in UX means:", choices:["The product is bug-free","The product fulfills a purpose for users","The product is widely marketed","The product uses modern technology"], a:1},
+      {q: "Which two components of UX most directly deal with trust?", choices:["Desirable and Accessible","Useful and Usable","Credible and Valuable","Findable and Desirable"], a:2},
+      {q: "Which of the following best integrates all seven components of UX?", choices:["Google Search homepage","A command-line interface","An unfinished prototype","Backend database design"], a:0},
+      {q: "Which of the following is NOT a characteristic of good UX design?", choices:["Predictability in navigation","Emotional satisfaction","Inconsistent button placement","Accessibility compliance"], a:2},
+      {q: "Good UX design primarily aims at:", choices:["Reducing coding errors","Maximizing user satisfaction and efficiency","Improving database performance","Reducing costs of development"], a:1},
+      {q: "Which principle ensures that the interface does not overload the user with options?", choices:["Simplicity","Flexibility","Error recovery","Accessibility"], a:0},
+      {q: "Which reflects a good UX practice?", choices:["Hidden navigation menus without hints","Clear feedback after user actions","Overloaded screens with too many CTAs","Random color choices"], a:1},
+      {q: "A website designed with consistent fonts, colors, and layouts across all pages demonstrates:", choices:["Usability heuristic of consistency","UX irrelevance","Desirability alone","Poor accessibility"], a:0},
+      {q: "Good UX balances the needs of:", choices:["Users only","Developers only","Both users and business objectives","Investors only"], a:2},
+      {q: "In UX, micro-interactions like button animations serve to:", choices:["Improve backend logic","Enhance user engagement and feedback","Increase code complexity","Replace usability heuristics"], a:1},
+      {q: "Which statement is FALSE about good UX?", choices:["It reduces cognitive load.","It anticipates errors.","It focuses only on aesthetics.","It considers accessibility."], a:2},
+      {q: "Good UX design is evaluated based on:", choices:["Business branding only","User satisfaction, efficiency, and effectiveness","Developer convenience","Backend performance"], a:1},
+      {q: "Which of the following is an example of bad UX?", choices:["Auto-saving form data","Error messages without guidance","Consistent navigation","Clear CTA buttons"], a:1},
+      {q: "Jakob Nielsen’s heuristics emphasize:", choices:["Aesthetic design only","General principles of interaction design","Programming guidelines","Database optimization rules"], a:1},
+      {q: "“Visibility of system status” in usability heuristics means:", choices:["User must know what the system is doing at all times","Backend operations should remain hidden","The system should display branding constantly","User actions should be restricted"], a:0},
+      {q: "Which heuristic ensures that users do not need to memorize too much information?", choices:["Error prevention","Recognition over recall","Flexibility","Consistency"], a:1},
+      {q: "Undo/redo functionality relates to which heuristic?", choices:["User control and freedom","Match between system and real world","Flexibility of use","Consistency"], a:0},
+      {q: "Providing error messages that explain the problem and suggest solutions demonstrates:", choices:["Visibility of system status","Error recovery support","Consistency","Minimalist design"], a:1},
+      {q: "A shopping cart icon that universally symbolizes e-commerce follows which heuristic?", choices:["Match between system and real world","Aesthetic minimalism","Flexibility","User freedom"], a:0},
+      {q: "Which heuristic advises against cluttered, irrelevant information on interfaces?", choices:["Flexibility","Minimalist design","Consistency","Error prevention"], a:1},
+      {q: "Allowing both keyboard shortcuts and mouse controls supports:", choices:["Flexibility and efficiency of use","Error prevention","Visibility of status","Recognition over recall"], a:0},
+      {q: "Which heuristic is MOST violated when identical functions behave differently across screens?", choices:["Consistency and standards","Visibility of status","Flexibility","Recognition over recall"], a:0},
+      {q: "Which usability heuristic strengthens user trust the most?", choices:["Flexibility","Help and documentation","Visibility of system status","Error prevention"], a:2}
+    ];
+
+    const total = questions.length;
+    let current = 0;
+    const answers = new Array(total).fill(null);
+
+    const qnum = document.getElementById('qnum');
+    const qtotal = document.getElementById('qtotal'); qtotal.textContent = total;
+    const questionText = document.getElementById('questionText');
+    const choicesEl = document.getElementById('choices');
+    const prog = document.getElementById('prog');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const navDots = document.getElementById('navDots');
+    const answeredCount = document.getElementById('answeredCount');
+    const result = document.getElementById('result');
+    const scoreText = document.getElementById('scoreText');
+    const reviewList = document.getElementById('reviewList');
+    const reviewBtn = document.getElementById('reviewBtn');
+    const retryBtn = document.getElementById('retryBtn');
+    const showAnswersBtn = document.getElementById('showAnswersBtn');
+
+    function renderQuestion(i){
+      const item = questions[i];
+      qnum.textContent = i+1;
+      questionText.textContent = item.q;
+      choicesEl.innerHTML = '';
+      item.choices.forEach((c, idx)=>{
+        const div = document.createElement('label');
+        div.className = 'choice';
+        div.tabIndex = 0;
+        div.innerHTML = `<input type='radio' name='choice' value='${idx}' ${answers[i]===idx? 'checked':''}> <span>${String.fromCharCode(65+idx)}. ${c}</span>`;
+        div.addEventListener('click', ()=>{ selectAnswer(i, idx); });
+        div.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') selectAnswer(i, idx); });
+        choicesEl.appendChild(div);
+      });
+      updateProgress();
+    }
+
+    function selectAnswer(qIndex, choiceIndex){
+      answers[qIndex] = choiceIndex;
+      renderDots();
+      renderQuestion(current);
+    }
+
+    function updateProgress(){
+      const pct = Math.round(((current)/ (total-1)) * 100);
+      prog.style.width = pct + '%';
+      answeredCount.textContent = (answers.filter(a=>a!==null).length) + ' / ' + total;
+      prevBtn.disabled = current === 0;
+      nextBtn.disabled = current === total-1;
+    }
+
+    prevBtn.addEventListener('click', ()=>{ if(current>0){ current--; renderQuestion(current); } });
+    nextBtn.addEventListener('click', ()=>{ if(current<total-1){ current++; renderQuestion(current); } });
+
+    document.addEventListener('keydown', (e)=>{
+      if(e.key === 'ArrowLeft') prevBtn.click();
+      if(e.key === 'ArrowRight') nextBtn.click();
+    });
+
+    function renderDots(){
+      navDots.innerHTML = '';
+      questions.forEach((_, i)=>{
+        const d = document.createElement('button');
+        d.className = 'secondary';
+        d.style.padding = '6px';
+        d.style.borderRadius = '999px';
+        d.style.minWidth = '34px';
+        d.textContent = i+1;
+        if(answers[i] !== null){ d.style.background = 'linear-gradient(90deg,var(--accent),#06b6d4)'; d.style.color = '#021025'; }
+        d.addEventListener('click', ()=>{ current = i; renderQuestion(current); });
+        navDots.appendChild(d);
+      });
+      answeredCount.textContent = (answers.filter(a=>a!==null).length) + ' / ' + total;
+    }
+
+    submitBtn.addEventListener('click', ()=>{
+      if(answers.includes(null)){
+        if(!confirm('You have unanswered questions. Submit anyway?')) return;
+      }
+      grade();
+    });
+
+    resetBtn.addEventListener('click', ()=>{
+      if(confirm('Reset all answers and restart the quiz?')){ answers.fill(null); current=0; renderQuestion(0); renderDots(); result.style.display='none'; }
+    });
+
+    function grade(){
+      let score = 0;
+      for(let i=0;i<total;i++) if(answers[i] === questions[i].a) score++;
+      scoreText.textContent = `You scored ${score} / ${total}`;
+      result.style.display = 'block';
+      reviewList.style.display = 'none';
+      reviewList.innerHTML = '';
+      // build review items
+      questions.forEach((item,i)=>{
+        const wrap = document.createElement('div');
+        wrap.className = 'review-item';
+        const qh = document.createElement('div'); qh.style.fontWeight='700'; qh.textContent = `Q${i+1}. ${item.q}`;
+        const user = document.createElement('div');
+        const uc = answers[i] === null ? 'No answer' : `${String.fromCharCode(65+answers[i])}. ${item.choices[answers[i]]}`;
+        user.innerHTML = `<div style='margin-top:8px'>Your answer: <span class='${answers[i]===item.a?"correct":"wrong"}'>${uc}</span></div>`;
+        const correct = document.createElement('div');
+        correct.innerHTML = `Correct: <span class='correct'>${String.fromCharCode(65+item.a)}. ${item.choices[item.a]}</span>`;
+        wrap.appendChild(qh); wrap.appendChild(user); wrap.appendChild(correct);
+        reviewList.appendChild(wrap);
+      });
+      // scroll to result
+      result.scrollIntoView({behavior:'smooth'});
+    }
+
+    reviewBtn.addEventListener('click', ()=>{ reviewList.style.display = (reviewList.style.display==='none' ? 'block':'none'); reviewList.scrollIntoView({behavior:'smooth'}); });
+    retryBtn.addEventListener('click', ()=>{ if(confirm('Retry quiz? This will clear your answers.')){ answers.fill(null); current=0; renderQuestion(0); renderDots(); result.style.display='none'; } });
+
+    showAnswersBtn.addEventListener('click', ()=>{
+      // toggle showing correct choices as overlays
+      const currently = showAnswersBtn.dataset.show === '1';
+      if(currently){ showAnswersBtn.textContent = 'Show Correct Answers'; showAnswersBtn.dataset.show = '0'; renderQuestion(current); }
+      else{ showAnswersBtn.textContent = 'Hide Correct Answers'; showAnswersBtn.dataset.show = '1'; // render with highlights
+        // in choices, highlight correct
+        choicesEl.querySelectorAll('.choice').forEach((el, idx)=>{
+          el.style.borderColor = 'transparent';
+          if(idx === questions[current].a){ el.style.borderColor = 'rgba(167,243,208,0.6)'; }
+        });
+      }
+    });
+
+    // initial render
+    renderDots(); renderQuestion(0);
+  </script>
+</body>
+</html>
