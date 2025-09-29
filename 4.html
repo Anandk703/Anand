@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UX Information Architecture Quiz</title>
+    <style>
+        :root {
+            --primary: #5d6cc0;
+            --secondary: #7e8ed7;
+            --accent: #ff9a76;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --success: #28a745;
+            --danger: #dc3545;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .description {
+            color: #666;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .quiz-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+
+        .question-counter, .score-display {
+            font-weight: bold;
+        }
+
+        .question-container {
+            margin-bottom: 25px;
+        }
+
+        .question-number {
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option {
+            padding: 15px;
+            border: 2px solid #eaeaea;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .option:hover {
+            background-color: #f8f9fa;
+            border-color: var(--secondary);
+        }
+
+        .option.selected {
+            background-color: #e6f2ff;
+            border-color: var(--primary);
+        }
+
+        .option.correct {
+            background-color: #d4edda;
+            border-color: var(--success);
+        }
+
+        .option.incorrect {
+            background-color: #f8d7da;
+            border-color: var(--danger);
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: var(--primary);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        button:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #submit-btn {
+            background-color: var(--accent);
+        }
+
+        #submit-btn:hover {
+            background-color: #ffb396;
+        }
+
+        .results-container {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: conic-gradient(var(--success) 0% 0%, #eaeaea 0% 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+
+        .score-circle::before {
+            content: '';
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background-color: white;
+            border-radius: 50%;
+        }
+
+        .score-value {
+            position: relative;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--dark);
+        }
+
+        .score-text {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .restart-btn {
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background-color: #eaeaea;
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .quiz-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .navigation {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>UX Information Architecture Quiz</h1>
+            <p class="description">Test your knowledge of Information Architecture concepts, tools, and methodologies in UX design</p>
+        </header>
+
+        <div class="quiz-info">
+            <div class="question-counter">Question: <span id="current-question">1</span> / <span id="total-questions">40</span></div>
+            <div class="score-display">Score: <span id="current-score">0</span></div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress" id="progress-bar"></div>
+        </div>
+
+        <div id="quiz-container">
+            <div class="question-container">
+                <div class="question-number">Question <span id="q-number">1</span></div>
+                <div class="question-text" id="question-text"></div>
+                <div class="options-container" id="options-container"></div>
+            </div>
+
+            <div class="navigation">
+                <button id="prev-btn" disabled>Previous</button>
+                <button id="next-btn">Next</button>
+                <button id="submit-btn" class="hidden">Submit Quiz</button>
+            </div>
+        </div>
+
+        <div id="results-container" class="results-container hidden">
+            <div class="score-circle">
+                <div class="score-value" id="final-score">0%</div>
+            </div>
+            <h2 class="score-text" id="score-message">Quiz Completed!</h2>
+            <p id="score-details">You scored <span id="correct-answers">0</span> out of <span id="total-questions-result">40</span> questions correctly.</p>
+            <button id="restart-btn" class="restart-btn">Restart Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        // Quiz questions and answers
+        const quizData = [
+            {
+                question: "Information Architecture (IA) in UX primarily refers to:",
+                options: [
+                    "Server structuring and coding",
+                    "Organizing and labeling content for usability and findability",
+                    "Database indexing for faster queries",
+                    "Marketing structure design"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which of the following is NOT a goal of IA?",
+                options: [
+                    "Improving findability of content",
+                    "Supporting navigation and hierarchy",
+                    "Reducing backend code complexity",
+                    "Enhancing content clarity"
+                ],
+                correct: 2
+            },
+            {
+                question: "IA is MOST closely related to:",
+                options: [
+                    "Content organization and navigation",
+                    "System database schema",
+                    "Graphic design only",
+                    "Backend server optimization"
+                ],
+                correct: 0
+            },
+            {
+                question: "A product with strong IA ensures:",
+                options: [
+                    "Users quickly locate what they need",
+                    "Developers debug faster",
+                    "Business spends less on servers",
+                    "Marketing campaigns perform better"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which IA principle emphasizes grouping related content together?",
+                options: [
+                    "Consistency",
+                    "Organization",
+                    "Redundancy",
+                    "Scalability"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which method is commonly used to discover how users mentally group content?",
+                options: [
+                    "Heatmap tracking",
+                    "Card sorting",
+                    "SQL querying",
+                    "A/B testing"
+                ],
+                correct: 1
+            },
+            {
+                question: "A closed card sorting exercise allows participants to:",
+                options: [
+                    "Create their own categories",
+                    "Place items into predefined categories",
+                    "Avoid categorization",
+                    "Test color palettes"
+                ],
+                correct: 1
+            },
+            {
+                question: "A tree test in IA helps measure:",
+                options: [
+                    "Backend database load",
+                    "Navigation clarity and structure effectiveness",
+                    "Typography consistency",
+                    "Brand perception"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which best practice ensures scalable IA?",
+                options: [
+                    "Designing with flexibility for future content growth",
+                    "Fixing rigid, unchangeable categories",
+                    "Avoiding user feedback",
+                    "Using random taxonomy"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which is LEAST important in IA best practices?",
+                options: [
+                    "Content labeling that matches user vocabulary",
+                    "Consistent categorization",
+                    "Random grouping for uniqueness",
+                    "Clear hierarchy"
+                ],
+                correct: 2
+            },
+            {
+                question: "Where does IA typically fit in the UX design process?",
+                options: [
+                    "After backend testing",
+                    "Before visual design and prototyping",
+                    "At the coding stage",
+                    "During server deployment"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which step in the software process MOST depends on IA?",
+                options: [
+                    "Coding the backend database",
+                    "Designing navigation flows and wireframes",
+                    "Server optimization",
+                    "Marketing campaign design"
+                ],
+                correct: 1
+            },
+            {
+                question: "IA supports usability testing by:",
+                options: [
+                    "Giving structure to navigation and findability tasks",
+                    "Providing backend indexing",
+                    "Measuring system performance",
+                    "Reducing server downtime"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which Agile practice aligns well with iterative IA improvement?",
+                options: [
+                    "Sprint reviews with user feedback",
+                    "Database refactoring",
+                    "DevOps deployment",
+                    "Bug fixing"
+                ],
+                correct: 0
+            },
+            {
+                question: "IA as part of the software process ensures:",
+                options: [
+                    "Backend optimization only",
+                    "A structured content system that evolves with design",
+                    "Replacing frontend with SQL schemas",
+                    "Reducing user interviews"
+                ],
+                correct: 1
+            },
+            {
+                question: "A university website grouping links into Admissions, Academics, Research, and Campus Life is an example of:",
+                options: [
+                    "Navigation hierarchy in IA",
+                    "Server architecture",
+                    "Database schema",
+                    "Backend optimization"
+                ],
+                correct: 0
+            },
+            {
+                question: "An e-commerce app categorizing items into Electronics, Clothing, and Home Decor demonstrates:",
+                options: [
+                    "Content taxonomy in IA",
+                    "Database indexing",
+                    "Server load balancing",
+                    "Random grouping"
+                ],
+                correct: 0
+            },
+            {
+                question: "A blog platform organizing posts by date, category, and tags is an example of:",
+                options: [
+                    "IA with multiple navigation paths",
+                    "SQL schema mapping",
+                    "Marketing strategy",
+                    "Flat hierarchy"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which IA example demonstrates redundancy for usability?",
+                options: [
+                    "Having both search and category navigation",
+                    "Using only random menu items",
+                    "Forcing only linear navigation",
+                    "Excluding filters"
+                ],
+                correct: 0
+            },
+            {
+                question: "A government website presenting services grouped by citizen needs instead of departmental names reflects:",
+                options: [
+                    "User-centered IA",
+                    "System-centered IA",
+                    "Random IA",
+                    "Developer-focused IA"
+                ],
+                correct: 0
+            },
+            {
+                question: "A sitemap is primarily used to:",
+                options: [
+                    "Illustrate backend database flow",
+                    "Show hierarchical structure of website content",
+                    "Replace wireframes",
+                    "Optimize server caching"
+                ],
+                correct: 1
+            },
+            {
+                question: "In IA, the difference between flat and deep sitemap structure is:",
+                options: [
+                    "Flat = shallow hierarchy, Deep = multiple nested levels",
+                    "Flat = backend schema, Deep = frontend schema",
+                    "Flat = random order, Deep = structured order",
+                    "Flat = server architecture, Deep = IA"
+                ],
+                correct: 0
+            },
+            {
+                question: "A sitemap benefits users by:",
+                options: [
+                    "Showing system load",
+                    "Supporting navigation and content overview",
+                    "Reducing code size",
+                    "Debugging server errors"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which sitemap structure is most suitable for a small portfolio website?",
+                options: [
+                    "Flat",
+                    "Deep",
+                    "Random",
+                    "Hybrid"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which sitemap type is MOST scalable for large e-commerce websites?",
+                options: [
+                    "Flat",
+                    "Deep with clear categorization",
+                    "Random",
+                    "Circular"
+                ],
+                correct: 1
+            },
+            {
+                question: "Which navigation type provides multiple pathways to the same content?",
+                options: [
+                    "Global navigation",
+                    "Local navigation",
+                    "Faceted navigation",
+                    "Linear navigation"
+                ],
+                correct: 2
+            },
+            {
+                question: "Breadcrumb navigation primarily helps users to:",
+                options: [
+                    "Track their path and move back easily",
+                    "Avoid IA hierarchy",
+                    "Access backend schema",
+                    "Optimize server flow"
+                ],
+                correct: 0
+            },
+            {
+                question: "A global navigation bar typically:",
+                options: [
+                    "Appears only on the homepage",
+                    "Is consistent across all pages",
+                    "Changes randomly on each page",
+                    "Avoids hierarchy"
+                ],
+                correct: 1
+            },
+            {
+                question: "Hierarchy in navigation ensures:",
+                options: [
+                    "Content is structured by importance and relationships",
+                    "Backend systems perform faster",
+                    "Randomized design",
+                    "Navigation is hidden from users"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which is an example of poor navigation design?",
+                options: [
+                    "Inconsistent menu labels across pages",
+                    "Predictable category names",
+                    "Clear global navigation",
+                    "Supporting both menu and search"
+                ],
+                correct: 0
+            },
+            {
+                question: "In IA, taxonomy refers to:",
+                options: [
+                    "Categorization and classification of content",
+                    "Database schema optimization",
+                    "Visual hierarchy in typography",
+                    "User journey mapping"
+                ],
+                correct: 0
+            },
+            {
+                question: "Metadata in IA primarily serves to:",
+                options: [
+                    "Describe and provide context for content",
+                    "Replace navigation bars",
+                    "Optimize backend only",
+                    "Serve as branding text"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which is an example of metadata on an e-commerce site?",
+                options: [
+                    "Product name, price, tags, and description",
+                    "Server IP address",
+                    "Database indexing rules",
+                    "Random content placement"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which type of taxonomy is most flexible for tagging blog posts?",
+                options: [
+                    "Controlled vocabulary",
+                    "Faceted taxonomy",
+                    "Hierarchical taxonomy",
+                    "Random taxonomy"
+                ],
+                correct: 1
+            },
+            {
+                question: "Metadata improves user experience by:",
+                options: [
+                    "Supporting search, filtering, and content relevance",
+                    "Reducing IA complexity",
+                    "Optimizing only backend queries",
+                    "Hiding content from users"
+                ],
+                correct: 0
+            },
+            {
+                question: "A travel site offering filters by price, destination, and duration demonstrates:",
+                options: [
+                    "Faceted navigation using metadata",
+                    "Backend optimization",
+                    "Random taxonomy",
+                    "Deep sitemap"
+                ],
+                correct: 0
+            },
+            {
+                question: "Which IA tool is MOST useful for testing hierarchical menus?",
+                options: [
+                    "Tree testing",
+                    "SQL debugging",
+                    "Wireframing",
+                    "Heatmap analysis"
+                ],
+                correct: 0
+            },
+            {
+                question: "IA directly contributes to SEO because:",
+                options: [
+                    "Clear taxonomy and metadata help search engines crawl effectively",
+                    "It reduces server downtime",
+                    "It minimizes coding errors",
+                    "It increases marketing budgets"
+                ],
+                correct: 0
+            },
+            {
+                question: "Inconsistent metadata tags across a website cause:",
+                options: [
+                    "Confusing search and filtering results",
+                    "Faster backend response",
+                    "Random server allocation",
+                    "Better UX"
+                ],
+                correct: 0
+            },
+            {
+                question: "The integration of IA with UX ensures:",
+                options: [
+                    "Users easily find, understand, and navigate content",
+                    "Backend systems run faster",
+                    "Developers skip usability testing",
+                    "Marketing replaces content strategy"
+                ],
+                correct: 0
+            }
+        ];
+
+        // Quiz state
+        let currentQuestion = 0;
+        let score = 0;
+        let userAnswers = new Array(quizData.length).fill(null);
+
+        // DOM elements
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const currentQuestionSpan = document.getElementById('current-question');
+        const totalQuestionsSpan = document.getElementById('total-questions');
+        const currentScoreSpan = document.getElementById('current-score');
+        const quizContainer = document.getElementById('quiz-container');
+        const resultsContainer = document.getElementById('results-container');
+        const finalScoreSpan = document.getElementById('final-score');
+        const correctAnswersSpan = document.getElementById('correct-answers');
+        const totalQuestionsResultSpan = document.getElementById('total-questions-result');
+        const scoreMessage = document.getElementById('score-message');
+        const restartBtn = document.getElementById('restart-btn');
+        const qNumber = document.getElementById('q-number');
+        const progressBar = document.getElementById('progress-bar');
+
+        // Initialize quiz
+        function initQuiz() {
+            totalQuestionsSpan.textContent = quizData.length;
+            totalQuestionsResultSpan.textContent = quizData.length;
+            updateProgressBar();
+            showQuestion();
+        }
+
+        // Update progress bar
+        function updateProgressBar() {
+            const progress = ((currentQuestion + 1) / quizData.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        // Display current question
+        function showQuestion() {
+            const question = quizData[currentQuestion];
+            questionText.textContent = question.question;
+            qNumber.textContent = currentQuestion + 1;
+            currentQuestionSpan.textContent = currentQuestion + 1;
+            
+            // Clear previous options
+            optionsContainer.innerHTML = '';
+            
+            // Create new options
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.classList.add('option');
+                optionElement.textContent = option;
+                
+                // Check if this option was previously selected
+                if (userAnswers[currentQuestion] === index) {
+                    optionElement.classList.add('selected');
+                }
+                
+                optionElement.addEventListener('click', () => selectOption(index));
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            // Update navigation buttons
+            updateNavigation();
+            updateProgressBar();
+        }
+
+        // Select an option
+        function selectOption(optionIndex) {
+            // Remove selected class from all options
+            const options = document.querySelectorAll('.option');
+            options.forEach(option => option.classList.remove('selected'));
+            
+            // Add selected class to clicked option
+            options[optionIndex].classList.add('selected');
+            
+            // Save user's answer
+            userAnswers[currentQuestion] = optionIndex;
+            
+            // Update score if this is a new answer
+            if (optionIndex === quizData[currentQuestion].correct) {
+                // Only add to score if this question wasn't already answered correctly
+                if (userAnswers[currentQuestion] !== quizData[currentQuestion].correct) {
+                    score++;
+                    currentScoreSpan.textContent = score;
+                }
+            } else {
+                // If changing from correct to incorrect answer, decrease score
+                if (userAnswers[currentQuestion] === quizData[currentQuestion].correct) {
+                    score--;
+                    currentScoreSpan.textContent = score;
+                }
+            }
+        }
+
+        // Update navigation buttons
+        function updateNavigation() {
+            prevBtn.disabled = currentQuestion === 0;
+            
+            if (currentQuestion === quizData.length - 1) {
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+            }
+        }
+
+        // Navigate to next question
+        function nextQuestion() {
+            if (currentQuestion < quizData.length - 1) {
+                currentQuestion++;
+                showQuestion();
+            }
+        }
+
+        // Navigate to previous question
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion();
+            }
+        }
+
+        // Submit quiz and show results
+        function submitQuiz() {
+            // Calculate final score
+            let finalScore = 0;
+            userAnswers.forEach((answer, index) => {
+                if (answer === quizData[index].correct) {
+                    finalScore++;
+                }
+            });
+            
+            // Update results
+            const percentage = Math.round((finalScore / quizData.length) * 100);
+            finalScoreSpan.textContent = `${percentage}%`;
+            correctAnswersSpan.textContent = finalScore;
+            
+            // Set score message
+            if (percentage >= 90) {
+                scoreMessage.textContent = "Excellent! You're an IA expert!";
+            } else if (percentage >= 70) {
+                scoreMessage.textContent = "Great job! You know your IA fundamentals.";
+            } else if (percentage >= 50) {
+                scoreMessage.textContent = "Good effort! Keep learning IA concepts.";
+            } else {
+                scoreMessage.textContent = "Keep studying! Information Architecture takes practice.";
+            }
+            
+            // Update the score circle with animation
+            const scoreCircle = document.querySelector('.score-circle');
+            scoreCircle.style.background = `conic-gradient(var(--success) 0% ${percentage}%, #eaeaea ${percentage}% 100%)`;
+            
+            // Show results and hide quiz
+            quizContainer.classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+        }
+
+        // Restart quiz
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            userAnswers.fill(null);
+            currentScoreSpan.textContent = score;
+            quizContainer.classList.remove('hidden');
+            resultsContainer.classList.add('hidden');
+            showQuestion();
+        }
+
+        // Event listeners
+        prevBtn.addEventListener('click', prevQuestion);
+        nextBtn.addEventListener('click', nextQuestion);
+        submitBtn.addEventListener('click', submitQuiz);
+        restartBtn.addEventListener('click', restartQuiz);
+
+        // Initialize the quiz
+        initQuiz();
+    </script>
+</body>
+</html>
